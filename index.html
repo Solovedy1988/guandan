@@ -349,7 +349,7 @@
     <div class="container">
         <h1>🎊 创业西安 2026掼蛋分组器 🎊</h1>
 
-        <!-- 顶部操作区：输入框+单个分组按钮 -->
+        <!-- 顶部操作区：输入框+单个按钮整合 -->
         <div class="top-operation-area">
             <!-- 概率输入框 -->
             <div class="prob-input-group">
@@ -522,7 +522,7 @@
         }
 
         /**
-         * 更新概率显示栏
+         * 更新概率显示栏 - 修复马老板和David概率平均分配
          */
         function updateProbTip(isRandom, probZou, probNext) {
             const tipEl = document.getElementById("current-prob-tip");
@@ -531,15 +531,16 @@
             } else {
                 const finalZou = !isNaN(probZou) && probZou >=0 && probZou <=100 ? probZou : DEFAULT_PROB_ZOU;
                 const finalNext = !isNaN(probNext) && probNext >=0 && probNext <=100 ? probNext : DEFAULT_PROB_NEXT;
+                // 核心修复：剩余概率平均分配给马老板和David
                 const remain = 100 - finalZou;
-                const probMa = Math.round(remain * 10) / 10;
-                const probDavid = remain - probMa;
+                const probMa = (remain / 2).toFixed(1);
+                const probDavid = (remain / 2).toFixed(1);
                 tipEl.textContent = `本次分组概率：小魏与邹校同队 ${finalZou}% | 小魏与马老板 ${probMa}% | 小魏与David ${probDavid}% | 小魏在邹校下家 ${finalNext}%（不同队时）`;
             }
         }
 
         /**
-         * 更新规则说明区域
+         * 更新规则说明区域 - 同步概率说明
          */
         function updateRuleNote(isRandom, probZou, probNext) {
             const ruleEl = document.getElementById("rule-note");
@@ -554,11 +555,11 @@
                 const finalZou = !isNaN(probZou) && probZou >=0 && probZou <=100 ? probZou : DEFAULT_PROB_ZOU;
                 const finalNext = !isNaN(probNext) && probNext >=0 && probNext <=100 ? probNext : DEFAULT_PROB_NEXT;
                 const remain = 100 - finalZou;
-                const probMa = Math.round(remain * 10) / 10;
-                const probDavid = remain - probMa;
+                const probMa = (remain / 2).toFixed(1);
+                const probDavid = (remain / 2).toFixed(1);
                 ruleEl.innerHTML = `
                     <strong>🎯 本次分组规则（概率分组）：</strong><br>
-                    1. 小魏与邹校同队概率 ${finalZou}%，与马老板 ${probMa}%，与David ${probDavid}%；<br>
+                    1. 小魏与邹校同队概率 ${finalZou}%，剩余概率平均分配：与马老板 ${probMa}%，与David ${probDavid}%；<br>
                     2. 小魏与邹校不同队时，小魏在邹校下家概率为${finalNext}%（座位顺序：东→南→西→北→东）；<br>
                     3. 随机选择1人作为房主，房主座位金色高亮。
                 `;
@@ -650,7 +651,7 @@
         }
 
         /**
-         * 概率分组逻辑
+         * 概率分组逻辑 - 修复马老板和David概率平均分配
          */
         function probGroup(probZou, probNext) {
             const finalZou = !isNaN(probZou) && probZou >=0 && probZou <=100 ? probZou : DEFAULT_PROB_ZOU;
@@ -658,13 +659,15 @@
 
             const seatMap = { east: "", south: "", west: "", north: "" };
             let xiaoWeiTeammate = "";
-            const randomVal = Math.random();
+            const randomVal = Math.random() * 100;
 
-            const probZouDecimal = finalZou / 100;
-            const remainDecimal = (100 - finalZou) / 100 / 2;
-            if (randomVal < remainDecimal) {
+            // 核心修复：马老板和David概率严格平均
+            const probMa = (100 - finalZou) / 2;
+            const probDavid = (100 - finalZou) / 2;
+            
+            if (randomVal < probMa) {
                 xiaoWeiTeammate = "马老板";
-            } else if (randomVal < remainDecimal * 2) {
+            } else if (randomVal < probMa + probDavid) {
                 xiaoWeiTeammate = "David";
             } else {
                 xiaoWeiTeammate = "邹校";
