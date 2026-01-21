@@ -34,7 +34,7 @@
             margin-bottom: 30px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
-        /* 掼蛋桌布局：上北下南左西右东 */
+        /* 掼蛋桌布局 */
         .seats-wrapper {
             position: relative;
             width: 600px;
@@ -61,7 +61,7 @@
             padding: 10px;
             transition: all 0.3s ease;
         }
-        /* 房主座位高亮样式 */
+        /* 房主高亮样式 */
         .seat.host {
             border-color: #ffd700;
             background: linear-gradient(180deg, #fff8dc 0%, #fff3cd 100%);
@@ -79,7 +79,7 @@
             font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        /* 方位定位 */
+        /* 座位方位定位 */
         .seat.north { top: 20px; left: 50%; transform: translateX(-50%); }
         .seat.south { bottom: 20px; left: 50%; transform: translateX(-50%); }
         .seat.west { left: 20px; top: 50%; transform: translateY(-50%); }
@@ -105,7 +105,7 @@
             color: #333;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-        /* 中间文字 */
+        /* 中间标题 */
         .center-text {
             position: absolute;
             top: 50%;
@@ -130,7 +130,17 @@
             margin: 10px 0;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-        /* 生成时间 */
+        /* 概率显示栏 */
+        .current-prob-tip {
+            font-size: 18px;
+            color: #28a745;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 8px;
+            background-color: rgba(40, 167, 69, 0.1);
+            border-radius: 8px;
+        }
+        /* 时间显示 */
         .generate-time {
             margin: 20px 0;
             font-size: 18px;
@@ -144,7 +154,43 @@
             color: #c8102e;
             line-height: 1.8;
         }
-        /* 按钮样式 - 两个按钮并排 */
+        /* 概率输入框 - 两列布局 */
+        .prob-input-group {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .prob-input-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .prob-input-item label {
+            color: #c8102e;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .prob-input-item input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            color: #333;
+        }
+        .prob-input-item input:focus {
+            outline: none;
+            border-color: #c8102e;
+        }
+        .percent {
+            color: #c8102e;
+            font-weight: bold;
+        }
+        /* 按钮样式 */
         .btn-group {
             display: flex;
             justify-content: center;
@@ -192,7 +238,7 @@
     <div class="container">
         <h1>🎊 创业西安 2026掼蛋分组器 🎊</h1>
         
-        <!-- 掼蛋桌布局 -->
+        <!-- 掼蛋座位区 -->
         <div class="seats-wrapper">
             <div class="seat north">
                 <div class="host-tag" style="display: none;">房主</div>
@@ -224,7 +270,10 @@
         <!-- 房主提示 -->
         <div class="host-tip" id="host-tip">本次房主：<span id="current-host">-</span></div>
 
-        <!-- 生成时间 -->
+        <!-- 实时概率显示（修正为33.3%均分） -->
+        <div class="current-prob-tip" id="current-prob-tip">本次分组概率：小魏与邹校同队 33.4% | 小魏在邹校下家 50%（不同队时）</div>
+
+        <!-- 时间显示 -->
         <div class="generate-time">📅 本次分组生成时间：<span id="generate-time">-</span></div>
         
         <!-- 队伍信息 -->
@@ -233,19 +282,32 @@
             <div>🀝 南+北 队：<span id="team2">-</span></div>
         </div>
 
-        <!-- 两个按钮：随机分组 + 概率分组 -->
+        <!-- 两个概率输入框：同队概率 + 下家概率 -->
+        <div class="prob-input-group">
+            <div class="prob-input-item">
+                <label for="prob-zou">小魏与邹校同队概率：</label>
+                <input type="number" id="prob-zou" min="0" max="100" placeholder="33.4%">
+                <span class="percent">%</span>
+            </div>
+            <div class="prob-input-item">
+                <label for="prob-next">小魏在邹校下家概率：</label>
+                <input type="number" id="prob-next" min="0" max="100" placeholder="50%">
+                <span class="percent">%</span>
+            </div>
+        </div>
+
+        <!-- 分组按钮 -->
         <div class="btn-group">
             <button class="btn-random" onclick="generateRandomGroup()">🎲 随机分组</button>
             <button class="btn-prob" onclick="generateProbGroup()">🎯 概率分组</button>
         </div>
 
-        <!-- 规则说明 -->
-        <div class="rule-note">
-            <strong>🎯 分组规则：</strong><br>
-            1. 小魏和马老板同队概率 xx%；<br>
-            2. 小魏和David同队概率 xx%；<br>
-            3. 若小魏不和邹校同队，小魏在邹校下家的概率 xx%（下家顺序：东→南→西→北→东）。<br>
-            4. 每次分组随机选出1人作为房主，房主座位高亮显示。
+        <!-- 动态规则说明（修正概率描述） -->
+        <div class="rule-note" id="rule-note">
+            <strong>🎯 本次分组规则（随机分组）：</strong><br>
+            1. 所有分配完全随机，小魏与马老板/David/邹校同队概率 33.3%/33.3%/33.4%；<br>
+            2. 小魏与邹校不同队时，小魏在邹校下家概率为50%（座位顺序：东→南→西→北→东）；<br>
+            3. 随机选择1人作为房主，房主座位金色高亮。
         </div>
     </div>
 
@@ -258,188 +320,258 @@
             "小魏": "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/667973a943ee4d508cf167d5de7bbbe0.jpg~tplv-a9rns2rl98-image.png?lk3s=8e244e95&rcl=20260121134801AD78531F66BD8D368B73&rrcfp=dafada99&x-expires=2085198481&x-signature=L2kCmu0%2Fmk06KAU1Ch5osfIGaYo%3D"
         };
 
-        // 基础数据
         const people = ["David", "邹校", "马老板", "小魏"];
         const directions = ["east", "south", "west", "north"];
         const directionOrder = ["east", "south", "west", "north"];
+        // 修正随机分组默认概率（精准均分）
+        const DEFAULT_PROB_ZOU = 33.4;
+        const DEFAULT_PROB_MA = 33.3;
+        const DEFAULT_PROB_DAVID = 33.3;
+        const DEFAULT_PROB_NEXT = 50;
 
-        // 初始化：默认执行概率分组 + 随机房主
-        generateProbGroup();
+        // 初始化执行随机分组
+        generateRandomGroup();
 
         /**
          * 格式化时间
          */
         function formatTime(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hour = String(date.getHours()).padStart(2, '0');
-            const minute = String(date.getMinutes()).padStart(2, '0');
-            const second = String(date.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+            return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
         }
 
         /**
-         * 随机选择房主并高亮显示
+         * 重置输入框为默认占位符
+         */
+        function resetInputFields() {
+            document.getElementById("prob-zou").value = "";
+            document.getElementById("prob-next").value = "";
+        }
+
+        /**
+         * 随机选房主并高亮
          */
         function setRandomHost(seatMap) {
-            // 1. 随机选1个人作为房主
             const hostName = people[Math.floor(Math.random() * people.length)];
-            
-            // 2. 找到房主所在的方位
             let hostDir = "";
             for (const dir of directions) {
-                if (seatMap[dir] === hostName) {
-                    hostDir = dir;
-                    break;
-                }
+                if (seatMap[dir] === hostName) hostDir = dir;
             }
 
-            // 3. 清除所有座位的房主样式
+            // 清除所有房主样式
             directions.forEach(dir => {
-                const seatEl = document.querySelector(`.seat.${dir}`);
-                const tagEl = seatEl.querySelector(".host-tag");
-                seatEl.classList.remove("host");
-                tagEl.style.display = "none";
+                const seat = document.querySelector(`.seat.${dir}`);
+                seat.classList.remove("host");
+                seat.querySelector(".host-tag").style.display = "none";
             });
 
-            // 4. 给房主座位添加高亮样式
+            // 给房主座位加样式
             if (hostDir) {
-                const hostSeatEl = document.querySelector(`.seat.${hostDir}`);
-                const hostTagEl = hostSeatEl.querySelector(".host-tag");
-                hostSeatEl.classList.add("host");
-                hostTagEl.style.display = "block";
+                const hostSeat = document.querySelector(`.seat.${hostDir}`);
+                hostSeat.classList.add("host");
+                hostSeat.querySelector(".host-tag").style.display = "block";
             }
-
-            // 5. 更新房主提示文字
             document.getElementById("current-host").textContent = hostName;
         }
 
         /**
-         * 方法1：随机分组（完全随机，无概率限制）
+         * 更新概率显示栏
+         */
+        function updateProbTip(type, probZou, probNext) {
+            const tipEl = document.getElementById("current-prob-tip");
+
+            if (type === "random") {
+                tipEl.textContent = `本次分组概率：小魏与马老板 ${DEFAULT_PROB_MA}% | 小魏与David ${DEFAULT_PROB_DAVID}% | 小魏与邹校 ${DEFAULT_PROB_ZOU}% | 小魏在邹校下家 ${DEFAULT_PROB_NEXT}%（不同队时）`;
+            } else if (type === "prob") {
+                // 校验输入有效性
+                const isValidZou = !isNaN(probZou) && probZou >= 0 && probZou <= 100;
+                const isValidNext = !isNaN(probNext) && probNext >= 0 && probNext <= 100;
+                const finalZou = isValidZou ? probZou : DEFAULT_PROB_ZOU;
+                const finalNext = isValidNext ? probNext : DEFAULT_PROB_NEXT;
+                
+                // 计算马老板和David的同队概率
+                const remain = 100 - finalZou;
+                const probMa = Math.round(remain * 10) / 10;
+                const probDavid = remain - probMa;
+
+                tipEl.textContent = `本次分组概率：小魏与邹校同队 ${finalZou}% | 小魏与马老板 ${probMa}% | 小魏与David ${probDavid}% | 小魏在邹校下家 ${finalNext}%（不同队时）`;
+            }
+        }
+
+        /**
+         * 更新规则说明区域
+         */
+        function updateRuleNote(type, probZou, probNext) {
+            const ruleEl = document.getElementById("rule-note");
+
+            if (type === "random") {
+                // 随机分组规则（修正为33.3%/33.3%/33.4%）
+                ruleEl.innerHTML = `
+                    <strong>🎯 本次分组规则（随机分组）：</strong><br>
+                    1. 所有分配完全随机，小魏与马老板/David/邹校同队概率 ${DEFAULT_PROB_MA}%/${DEFAULT_PROB_DAVID}%/${DEFAULT_PROB_ZOU}%；<br>
+                    2. 小魏与邹校不同队时，小魏在邹校下家概率为${DEFAULT_PROB_NEXT}%（座位顺序：东→南→西→北→东）；<br>
+                    3. 随机选择1人作为房主，房主座位金色高亮。
+                `;
+            } else if (type === "prob") {
+                const isValidZou = !isNaN(probZou) && probZou >= 0 && probZou <= 100;
+                const isValidNext = !isNaN(probNext) && probNext >= 0 && probNext <= 100;
+                const finalZou = isValidZou ? probZou : DEFAULT_PROB_ZOU;
+                const finalNext = isValidNext ? probNext : DEFAULT_PROB_NEXT;
+                const remain = 100 - finalZou;
+                const probMa = Math.round(remain * 10) / 10;
+                const probDavid = remain - probMa;
+
+                if (!isValidZou && !isValidNext) {
+                    // 两个输入都无效
+                    ruleEl.innerHTML = `
+                        <strong>🎯 本次分组规则（概率分组-默认随机）：</strong><br>
+                        1. 输入概率无效，按随机模式执行，小魏与马老板/David/邹校同队概率 ${DEFAULT_PROB_MA}%/${DEFAULT_PROB_DAVID}%/${DEFAULT_PROB_ZOU}%；<br>
+                        2. 小魏与邹校不同队时，小魏在邹校下家概率为${DEFAULT_PROB_NEXT}%（座位顺序：东→南→西→北→东）；<br>
+                        3. 随机选择1人作为房主，房主座位金色高亮。
+                    `;
+                } else {
+                    // 至少一个输入有效
+                    ruleEl.innerHTML = `
+                        <strong>🎯 本次分组规则（概率分组-自定义）：</strong><br>
+                        1. 小魏与邹校同队概率 ${finalZou}%，与马老板 ${probMa}%，与David ${probDavid}%；<br>
+                        2. 小魏与邹校不同队时，小魏在邹校下家概率为${finalNext}%（座位顺序：东→南→西→北→东）；<br>
+                        3. 随机选择1人作为房主，房主座位金色高亮。
+                    `;
+                }
+            }
+        }
+
+        /**
+         * 随机分组逻辑（完全无偏向）
          */
         function generateRandomGroup() {
+            // 关键：点击随机分组时，清空输入框
+            resetInputFields();
+
             const now = new Date();
             document.getElementById("generate-time").textContent = formatTime(now);
 
-            // 深拷贝人员列表并打乱
-            let randomPeople = [...people];
-            randomPeople = randomPeople.sort(() => Math.random() - 0.5);
-
-            // 分配到四个方位
+            // 打乱人员顺序
+            const randomPeople = [...people].sort(() => Math.random() - 0.5);
             const seatMap = {};
-            directions.forEach((dir, index) => {
-                seatMap[dir] = randomPeople[index];
-            });
+            directions.forEach((dir, i) => seatMap[dir] = randomPeople[i]);
 
-            // 设置随机房主
             setRandomHost(seatMap);
-
-            // 更新页面
+            updateProbTip("random");
+            updateRuleNote("random");
             updatePage(seatMap);
         }
 
         /**
-         * 方法2：概率分组（按40%/40%/80%规则）
+         * 概率分组逻辑（控制同队概率 + 下家概率）
          */
         function generateProbGroup() {
             const now = new Date();
             document.getElementById("generate-time").textContent = formatTime(now);
 
+            // 获取输入值
+            const probZouInput = parseFloat(document.getElementById("prob-zou").value);
+            const probNextInput = parseFloat(document.getElementById("prob-next").value);
+
+            // 校验同队概率有效性
+            const isValidZou = !isNaN(probZouInput) && probZouInput >= 0 && probZouInput <= 100;
+            const finalZou = isValidZou ? probZouInput : DEFAULT_PROB_ZOU;
+            // 校验下家概率有效性
+            const isValidNext = !isNaN(probNextInput) && probNextInput >= 0 && probNextInput <= 100;
+            const finalNext = isValidNext ? probNextInput : DEFAULT_PROB_NEXT;
+
             const seatMap = { east: "", south: "", west: "", north: "" };
             let xiaoWeiTeammate = "";
-            const random = Math.random();
+            const randomVal = Math.random();
 
-            // 40%马老板 / 40%David / 20%邹校
-            if (random < 0.4) {
-                xiaoWeiTeammate = "马老板";
-            } else if (random < 0.8) {
-                xiaoWeiTeammate = "David";
+            // 确定小魏的队友
+            if (isValidZou) {
+                const probZouDecimal = finalZou / 100;
+                const remainDecimal = (100 - finalZou) / 100 / 2;
+                if (randomVal < remainDecimal) {
+                    xiaoWeiTeammate = "马老板";
+                } else if (randomVal < remainDecimal * 2) {
+                    xiaoWeiTeammate = "David";
+                } else {
+                    xiaoWeiTeammate = "邹校";
+                }
             } else {
-                xiaoWeiTeammate = "邹校";
+                // 无效输入则随机匹配
+                const teammates = ["马老板", "David", "邹校"];
+                xiaoWeiTeammate = teammates[Math.floor(Math.random() * 3)];
             }
 
-            // 分配队伍和方位
+            // 分配小魏和队友的座位
             const team1 = ["east", "west"];
             const team2 = ["south", "north"];
             const xiaoWeiTeam = Math.random() > 0.5 ? team1 : team2;
             const otherTeam = xiaoWeiTeam === team1 ? team2 : team1;
-
-            const [xiaoWeiDir, teammateDir] = Math.random() > 0.5 ? [xiaoWeiTeam[0], xiaoWeiTeam[1]] : [xiaoWeiTeam[1], xiaoWeiTeam[0]];
+            const [xiaoWeiDir, mateDir] = Math.random() > 0.5 ? [xiaoWeiTeam[0], xiaoWeiTeam[1]] : [xiaoWeiTeam[1], xiaoWeiTeam[0]];
             seatMap[xiaoWeiDir] = "小魏";
-            seatMap[teammateDir] = xiaoWeiTeammate;
+            seatMap[mateDir] = xiaoWeiTeammate;
 
-            // 处理剩余两人
-            const remainingPeople = people.filter(p => p !== "小魏" && p !== xiaoWeiTeammate);
-            let zouXiao = remainingPeople.find(p => p === "邹校") || "";
-            let lastPerson = remainingPeople.find(p => p !== zouXiao) || "";
+            // 分配剩余两人
+            const remainPeople = people.filter(p => p !== "小魏" && p !== xiaoWeiTeammate);
+            let zou = remainPeople.find(p => p === "邹校") || "";
+            let other = remainPeople.find(p => p !== zou) || "";
 
-            // 80%概率小魏在邹校下家（不同队时）
-            if (xiaoWeiTeammate !== "邹校" && zouXiao) {
-                if (Math.random() < 0.8) {
-                    const xiaoWeiIndex = directionOrder.indexOf(xiaoWeiDir);
-                    const zouXiaoIndex = (xiaoWeiIndex - 1 + 4) % 4;
-                    const zouXiaoTargetDir = directionOrder[zouXiaoIndex];
-                    
-                    if (otherTeam.includes(zouXiaoTargetDir)) {
-                        seatMap[zouXiaoTargetDir] = zouXiao;
-                        const lastDir = otherTeam.find(dir => dir !== zouXiaoTargetDir);
-                        seatMap[lastDir] = lastPerson;
+            // 小魏与邹校不同队时，按设定概率分配下家位置
+            if (xiaoWeiTeammate !== "邹校" && zou) {
+                if (Math.random() < finalNext / 100) {
+                    // 按设定概率让小魏在邹校下家
+                    const xiaoWeiIdx = directionOrder.indexOf(xiaoWeiDir);
+                    const zouIdx = (xiaoWeiIdx - 1 + 4) % 4;
+                    const zouDir = directionOrder[zouIdx];
+                    if (otherTeam.includes(zouDir)) {
+                        seatMap[zouDir] = zou;
+                        seatMap[otherTeam.find(d => d !== zouDir)] = other;
                     } else {
-                        const [zouXiaoDir, lastDir] = Math.random() > 0.5 ? [otherTeam[0], otherTeam[1]] : [otherTeam[1], otherTeam[0]];
-                        seatMap[zouXiaoDir] = zouXiao;
-                        seatMap[lastDir] = lastPerson;
+                        seatMap[otherTeam[0]] = zou;
+                        seatMap[otherTeam[1]] = other;
                     }
                 } else {
-                    const xiaoWeiIndex = directionOrder.indexOf(xiaoWeiDir);
-                    const zouXiaoUpperIndex = (xiaoWeiIndex - 1 + 4) % 4;
-                    const zouXiaoUpperDir = directionOrder[zouXiaoUpperIndex];
-                    const availableDirs = otherTeam.filter(dir => dir !== zouXiaoUpperDir);
-                    const [zouXiaoDir, lastDir] = availableDirs.length === 2 
-                        ? (Math.random() > 0.5 ? [availableDirs[0], availableDirs[1]] : [availableDirs[1], availableDirs[0]])
-                        : [otherTeam[0], otherTeam[1]];
-                    
-                    seatMap[zouXiaoDir] = zouXiao;
-                    seatMap[lastDir] = lastPerson;
+                    // 不在下家位置
+                    const xiaoWeiIdx = directionOrder.indexOf(xiaoWeiDir);
+                    const zouIdx = (xiaoWeiIdx - 1 + 4) % 4;
+                    const zouDir = directionOrder[zouIdx];
+                    const availableDirs = otherTeam.filter(dir => dir !== zouDir);
+                    if (availableDirs.length > 0) {
+                        const [zouTargetDir, otherDir] = Math.random() > 0.5 ? [availableDirs[0], availableDirs[1] || otherTeam[0]] : [availableDirs[1] || otherTeam[1], availableDirs[0]];
+                        seatMap[zouTargetDir] = zou;
+                        seatMap[otherDir] = other;
+                    } else {
+                        seatMap[otherTeam[0]] = other;
+                        seatMap[otherTeam[1]] = zou;
+                    }
                 }
             } else {
-                const lastDir = otherTeam[Math.random() > 0.5 ? 0 : 1];
-                seatMap[lastDir] = lastPerson;
-                const otherDir = otherTeam.find(dir => dir !== lastDir);
-                seatMap[otherDir] = zouXiao;
+                seatMap[otherTeam[0]] = other;
+                seatMap[otherTeam[1]] = zou;
             }
 
-            // 兜底检查：确保每个方位都有人
+            // 兜底检查，防止空位
             directions.forEach(dir => {
-                if (!seatMap[dir] || seatMap[dir] === "") {
+                if (!seatMap[dir]) {
                     const unassigned = people.find(p => !Object.values(seatMap).includes(p));
                     if (unassigned) seatMap[dir] = unassigned;
                 }
             });
 
-            // 设置随机房主
             setRandomHost(seatMap);
-
-            // 更新页面
+            updateProbTip("prob", probZouInput, probNextInput);
+            updateRuleNote("prob", probZouInput, probNextInput);
             updatePage(seatMap);
         }
 
         /**
-         * 更新页面显示
+         * 更新页面座位和队伍信息
          */
         function updatePage(seatMap) {
             directions.forEach(dir => {
-                const person = seatMap[dir] || "-";
-                document.getElementById(`${dir}-person`).textContent = person;
-                const avatarEl = document.getElementById(`${dir}-avatar`);
-                avatarEl.src = avatarMap[person] || "";
-                avatarEl.alt = person;
+                document.getElementById(`${dir}-person`).textContent = seatMap[dir];
+                document.getElementById(`${dir}-avatar`).src = avatarMap[seatMap[dir]] || "";
             });
-
-            const team1Text = `${seatMap.east || "-"} + ${seatMap.west || "-"}`;
-            const team2Text = `${seatMap.south || "-"} + ${seatMap.north || "-"}`;
-            document.getElementById("team1").textContent = team1Text;
-            document.getElementById("team2").textContent = team2Text;
+            document.getElementById("team1").textContent = `${seatMap.east} + ${seatMap.west}`;
+            document.getElementById("team2").textContent = `${seatMap.south} + ${seatMap.north}`;
         }
     </script>
 </body>
