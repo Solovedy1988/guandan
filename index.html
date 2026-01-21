@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>掼蛋分组</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;background:#f2f2f2;padding:20px;text-align:center}h1{margin-bottom:15px}#card{background:#fff;border-radius:10px;padding:25px 20px;display:inline-block;box-shadow:0 4px 12px rgba(0,0,0,.15);min-width:300px}button{padding:12px 24px;font-size:18px;border:none;border-radius:6px;background:#007aff;color:#fff;cursor:pointer;width:100%}button:active{background:#0051d5}pre{text-align:left;margin:15px 0 0;font-size:16px;line-height:1.6;white-space:pre-wrap}
+</style>
+<script src="https://pyscript.net/latest/pyscript.min.js"></script>
+<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
+</head>
+<body>
+<h1>掼蛋方位分组</h1>
+<div id="card">
+  <button onclick="gen()">开始分组</button>
+  <pre id="out"></pre>
+</div>
+
+<py-script>
+import random, datetime, js
+
+names = ['David', '邹校', '马老板', '小魏']
+DIR   = ['东', '南', '西', '北']
+next_seat = {'东': '南', '南': '西', '西': '北', '北': '东'}
+
+def seat_once():
+    random.shuffle(names)
+    return dict(zip(DIR, names))
+
+def satisfy_rule(pos):
+    # 1. 小魏&马老板 40% 同队
+    if random.random() < 0.40:
+        ew = [pos['东'], pos['西']]
+        if '小魏' in ew and '马老板' not in ew:
+            target = '东' if pos['东'] == '小魏' else '西'
+            other  = {'东': '南', '南': '东', '西': '北', '北': '西'}[target]
+            for d in DIR:
+                if pos[d] == '马老板':
+                    pos[d], pos[other] = pos[other], pos[d]
+                    break
+    # 2. 小魏&David 40% 同队
+    if random.random() < 0.40:
+        ew = [pos['东'], pos['西']]
+        if '小魏' in ew and 'David' not in ew:
+            target = '东' if pos['东'] == '小魏' else '西'
+            other  = {'东': '南', '南': '东', '西': '北', '北': '西'}[target]
+            for d in DIR:
+                if pos[d] == 'David':
+                    pos[d], pos[other] = pos[other], pos[d]
+                    break
+    # 3. 小魏≠邹校 时 80% 让小魏坐邹校下家
+    wei_pos = [k for k, v in pos.items() if v == '小魏'][0]
+    zou_pos = [k for k, v in pos.items() if v == '邹校'][0]
+    if wei_pos != zou_pos and random.random() < 0.80:
+        target = next_seat[zou_pos]
+        if wei_pos != target:
+            pos[target], pos[wei_pos] = pos[wei_pos], pos[target]
+    return pos
+
+def generate():
+    result = satisfy_rule(seat_once())
+    ew = f"{result['东']} & {result['西']}"
+    sn = f"{result['南']} & {result['北']}"
+    t  = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+    out = f"分组时刻：{t}\n\n"
+    out+= f"东: {result['东']}  南: {result['南']}  西: {result['西']}  北: {result['北']}\n"
+    out+= f"队伍A（东-西）：{ew}\n"
+    out+= f"队伍B（南-北）：{sn}"
+    js.document.getElementById('out').text = out
+
+# 页面加载后自动执行一次
+generate()
+</py-script>
+
+<script>
+function gen(){ pyscript.globals.get('generate')(); }
+</script>
+</body>
+</html>
