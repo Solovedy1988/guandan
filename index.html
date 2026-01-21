@@ -1,80 +1,369 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<title>掼蛋分组</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;background:#f2f2f2;padding:20px;text-align:center}h1{margin-bottom:15px}#card{background:#fff;border-radius:10px;padding:25px 20px;display:inline-block;box-shadow:0 4px 12px rgba(0,0,0,.15);min-width:300px}button{padding:12px 24px;font-size:18px;border:none;border-radius:6px;background:#007aff;color:#fff;cursor:pointer;width:100%}button:active{background:#0051d5}pre{text-align:left;margin:15px 0 0;font-size:16px;line-height:1.6;white-space:pre-wrap}
-</style>
-<script src="https://pyscript.net/latest/pyscript.min.js"></script>
-<link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创业西安 2026掼蛋分组器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "微软雅黑", "黑体", Arial, sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+            background: url("https://img.icons8.com/color/1600/playing-cards.png") no-repeat center 20px;
+            background-size: 100px;
+            background-color: #fff;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 30px rgba(255, 105, 0, 0.3);
+            border: 5px solid #d4af37;
+        }
+        h1 {
+            color: #c8102e;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        /* 掼蛋桌布局：上北下南左西右东 */
+        .seats-wrapper {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            margin: 20px auto;
+            background: radial-gradient(circle, #f9f2e8 0%, #e8d4b8 100%);
+            border-radius: 50%;
+            border: 8px solid #8b4513;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.2), 0 0 20px rgba(139, 69, 19, 0.4);
+        }
+        .seat {
+            position: absolute;
+            width: 140px;
+            height: 180px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8f0e3 100%);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 3px solid #c8102e;
+            padding: 10px;
+        }
+        /* 方位定位 */
+        .seat.north { top: 20px; left: 50%; transform: translateX(-50%); }
+        .seat.south { bottom: 20px; left: 50%; transform: translateX(-50%); }
+        .seat.west { left: 20px; top: 50%; transform: translateY(-50%); }
+        .seat.east { right: 20px; top: 50%; transform: translateY(-50%); }
+        
+        .seat .direction {
+            color: #c8102e;
+            font-size: 20px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .seat .avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 8px;
+            border: 4px solid #ffd700;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        .seat .person {
+            font-size: 18px;
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        /* 中间文字 */
+        .center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 38px;
+            font-weight: bold;
+            color: #c8102e;
+            letter-spacing: 6px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+            background: linear-gradient(90deg, #ffd700 0%, #ff8c00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            line-height: 1.4;
+        }
+        /* 生成时间 */
+        .generate-time {
+            margin: 20px 0;
+            font-size: 18px;
+            color: #8b4513;
+            font-weight: bold;
+        }
+        /* 队伍信息 */
+        .team-info {
+            margin: 15px 0;
+            font-size: 20px;
+            color: #c8102e;
+            line-height: 1.8;
+        }
+        /* 按钮样式 - 两个按钮并排 */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        button {
+            padding: 15px 40px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-random {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        .btn-prob {
+            background: linear-gradient(90deg, #c8102e 0%, #ff4500 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(200, 16, 46, 0.4);
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        /* 规则说明 */
+        .rule-note {
+            margin-top: 30px;
+            color: #5a3e2b;
+            font-size: 16px;
+            line-height: 1.8;
+            text-align: left;
+            padding: 15px;
+            background-color: rgba(255, 248, 230, 0.8);
+            border-radius: 10px;
+            border-left: 5px solid #c8102e;
+        }
+    </style>
 </head>
 <body>
-<h1>掼蛋方位分组</h1>
-<div id="card">
-  <button onclick="gen()">开始分组</button>
-  <pre id="out"></pre>
-</div>
+    <div class="container">
+        <h1>🎊 创业西安 2026掼蛋分组器 🎊</h1>
+        
+        <!-- 掼蛋桌布局 -->
+        <div class="seats-wrapper">
+            <div class="seat north">
+                <div class="direction">北</div>
+                <img class="avatar" id="north-avatar" src="" alt="头像">
+                <div class="person" id="north-person">-</div>
+            </div>
+            <div class="seat south">
+                <div class="direction">南</div>
+                <img class="avatar" id="south-avatar" src="" alt="头像">
+                <div class="person" id="south-person">-</div>
+            </div>
+            <div class="seat west">
+                <div class="direction">西</div>
+                <img class="avatar" id="west-avatar" src="" alt="头像">
+                <div class="person" id="west-person">-</div>
+            </div>
+            <div class="seat east">
+                <div class="direction">东</div>
+                <img class="avatar" id="east-avatar" src="" alt="头像">
+                <div class="person" id="east-person">-</div>
+            </div>
+            <div class="center-text">创业西安<br>加油2026</div>
+        </div>
 
-<py-script>
-import random, datetime, js
+        <!-- 生成时间 -->
+        <div class="generate-time">📅 本次分组生成时间：<span id="generate-time">-</span></div>
+        
+        <!-- 队伍信息 -->
+        <div class="team-info">
+            <div>🀜 东+西 队：<span id="team1">-</span></div>
+            <div>🀝 南+北 队：<span id="team2">-</span></div>
+        </div>
 
-names = ['David', '邹校', '马老板', '小魏']
-DIR   = ['东', '南', '西', '北']
-next_seat = {'东': '南', '南': '西', '西': '北', '北': '东'}
+        <!-- 两个按钮：随机分组 + 概率分组 -->
+        <div class="btn-group">
+            <button class="btn-random" onclick="generateRandomGroup()">🎲 随机分组</button>
+            <button class="btn-prob" onclick="generateProbGroup()">🎯 概率分组</button>
+        </div>
 
-def seat_once():
-    random.shuffle(names)
-    return dict(zip(DIR, names))
+        <!-- 规则说明 -->
+        <div class="rule-note">
+            <strong>🎯 分组规则：</strong><br>
+            1. 小魏和马老板同队概率 xx%；<br>
+            2. 小魏和David同队概率 xx%；<br>
+            3. 若小魏不和邹校同队，小魏在邹校下家的概率 xx%（下家顺序：东→南→西→北→东）。
+        </div>
+    </div>
 
-def satisfy_rule(pos):
-    # 1. 小魏&马老板 40% 同队
-    if random.random() < 0.40:
-        ew = [pos['东'], pos['西']]
-        if '小魏' in ew and '马老板' not in ew:
-            target = '东' if pos['东'] == '小魏' else '西'
-            other  = {'东': '南', '南': '东', '西': '北', '北': '西'}[target]
-            for d in DIR:
-                if pos[d] == '马老板':
-                    pos[d], pos[other] = pos[other], pos[d]
-                    break
-    # 2. 小魏&David 40% 同队
-    if random.random() < 0.40:
-        ew = [pos['东'], pos['西']]
-        if '小魏' in ew and 'David' not in ew:
-            target = '东' if pos['东'] == '小魏' else '西'
-            other  = {'东': '南', '南': '东', '西': '北', '北': '西'}[target]
-            for d in DIR:
-                if pos[d] == 'David':
-                    pos[d], pos[other] = pos[other], pos[d]
-                    break
-    # 3. 小魏≠邹校 时 80% 让小魏坐邹校下家
-    wei_pos = [k for k, v in pos.items() if v == '小魏'][0]
-    zou_pos = [k for k, v in pos.items() if v == '邹校'][0]
-    if wei_pos != zou_pos and random.random() < 0.80:
-        target = next_seat[zou_pos]
-        if wei_pos != target:
-            pos[target], pos[wei_pos] = pos[wei_pos], pos[target]
-    return pos
+    <script>
+        // 头像映射
+        const avatarMap = {
+            "邹校": "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/3d754fe9f47b4ca896aba91ea6fe0b36.jpg~tplv-a9rns2rl98-image.png?lk3s=8e244e95&rcl=20260121134801AD78531F66BD8D368B73&rrcfp=dafada99&x-expires=2085198481&x-signature=Gd6lSOJOtC4vyRW73cQEMWWD08E%3D",
+            "David": "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/9a1a60ff466845578d6aca3912d50a61.jpg~tplv-a9rns2rl98-image.png?lk3s=8e244e95&rcl=20260121134801AD78531F66BD8D368B73&rrcfp=dafada99&x-expires=2085198481&x-signature=XmftXWeIhMU1eTz%2BUw0YnwXRtDw%3D",
+            "马老板": "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/93eda5e7c1014066991f9a7b4229fe0a.jpg~tplv-a9rns2rl98-image.png?lk3s=8e244e95&rcl=20260121134801AD78531F66BD8D368B73&rrcfp=dafada99&x-expires=2085198481&x-signature=bVV60%2FhVqQ4p4aDAo31AJKlyI9s%3D",
+            "小魏": "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/667973a943ee4d508cf167d5de7bbbe0.jpg~tplv-a9rns2rl98-image.png?lk3s=8e244e95&rcl=20260121134801AD78531F66BD8D368B73&rrcfp=dafada99&x-expires=2085198481&x-signature=L2kCmu0%2Fmk06KAU1Ch5osfIGaYo%3D"
+        };
 
-def generate():
-    result = satisfy_rule(seat_once())
-    ew = f"{result['东']} & {result['西']}"
-    sn = f"{result['南']} & {result['北']}"
-    t  = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-    out = f"分组时刻：{t}\n\n"
-    out+= f"东: {result['东']}  南: {result['南']}  西: {result['西']}  北: {result['北']}\n"
-    out+= f"队伍A（东-西）：{ew}\n"
-    out+= f"队伍B（南-北）：{sn}"
-    js.document.getElementById('out').text = out
+        // 基础数据
+        const people = ["David", "邹校", "马老板", "小魏"];
+        const directions = ["east", "south", "west", "north"];
+        const directionOrder = ["east", "south", "west", "north"];
 
-# 页面加载后自动执行一次
-generate()
-</py-script>
+        // 初始化：默认执行概率分组
+        generateProbGroup();
 
-<script>
-function gen(){ pyscript.globals.get('generate')(); }
-</script>
+        /**
+         * 格式化时间
+         */
+        function formatTime(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hour = String(date.getHours()).padStart(2, '0');
+            const minute = String(date.getMinutes()).padStart(2, '0');
+            const second = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+        }
+
+        /**
+         * 方法1：随机分组（完全随机，无概率限制）
+         */
+        function generateRandomGroup() {
+            const now = new Date();
+            document.getElementById("generate-time").textContent = formatTime(now);
+
+            // 深拷贝人员列表，避免修改原数组
+            let randomPeople = [...people];
+            // 打乱数组顺序（完全随机）
+            randomPeople = randomPeople.sort(() => Math.random() - 0.5);
+
+            // 分配到四个方位
+            const seatMap = {};
+            directions.forEach((dir, index) => {
+                seatMap[dir] = randomPeople[index];
+            });
+
+            // 更新页面
+            updatePage(seatMap);
+        }
+
+        /**
+         * 方法2：概率分组（按40%/40%/80%规则）
+         */
+        function generateProbGroup() {
+            const now = new Date();
+            document.getElementById("generate-time").textContent = formatTime(now);
+
+            const seatMap = { east: "", south: "", west: "", north: "" };
+            let xiaoWeiTeammate = "";
+            const random = Math.random();
+
+            // 40%马老板 / 40%David / 20%邹校
+            if (random < 0.4) {
+                xiaoWeiTeammate = "马老板";
+            } else if (random < 0.8) {
+                xiaoWeiTeammate = "David";
+            } else {
+                xiaoWeiTeammate = "邹校";
+            }
+
+            // 分配队伍和方位
+            const team1 = ["east", "west"];
+            const team2 = ["south", "north"];
+            const xiaoWeiTeam = Math.random() > 0.5 ? team1 : team2;
+            const otherTeam = xiaoWeiTeam === team1 ? team2 : team1;
+
+            const [xiaoWeiDir, teammateDir] = Math.random() > 0.5 ? [xiaoWeiTeam[0], xiaoWeiTeam[1]] : [xiaoWeiTeam[1], xiaoWeiTeam[0]];
+            seatMap[xiaoWeiDir] = "小魏";
+            seatMap[teammateDir] = xiaoWeiTeammate;
+
+            // 处理剩余两人
+            const remainingPeople = people.filter(p => p !== "小魏" && p !== xiaoWeiTeammate);
+            let zouXiao = remainingPeople.find(p => p === "邹校") || "";
+            let lastPerson = remainingPeople.find(p => p !== zouXiao) || "";
+
+            // 80%概率小魏在邹校下家（不同队时）
+            if (xiaoWeiTeammate !== "邹校" && zouXiao) {
+                if (Math.random() < 0.8) {
+                    const xiaoWeiIndex = directionOrder.indexOf(xiaoWeiDir);
+                    const zouXiaoIndex = (xiaoWeiIndex - 1 + 4) % 4;
+                    const zouXiaoTargetDir = directionOrder[zouXiaoIndex];
+                    
+                    if (otherTeam.includes(zouXiaoTargetDir)) {
+                        seatMap[zouXiaoTargetDir] = zouXiao;
+                        const lastDir = otherTeam.find(dir => dir !== zouXiaoTargetDir);
+                        seatMap[lastDir] = lastPerson;
+                    } else {
+                        const [zouXiaoDir, lastDir] = Math.random() > 0.5 ? [otherTeam[0], otherTeam[1]] : [otherTeam[1], otherTeam[0]];
+                        seatMap[zouXiaoDir] = zouXiao;
+                        seatMap[lastDir] = lastPerson;
+                    }
+                } else {
+                    const xiaoWeiIndex = directionOrder.indexOf(xiaoWeiDir);
+                    const zouXiaoUpperIndex = (xiaoWeiIndex - 1 + 4) % 4;
+                    const zouXiaoUpperDir = directionOrder[zouXiaoUpperIndex];
+                    const availableDirs = otherTeam.filter(dir => dir !== zouXiaoUpperDir);
+                    const [zouXiaoDir, lastDir] = availableDirs.length === 2 
+                        ? (Math.random() > 0.5 ? [availableDirs[0], availableDirs[1]] : [availableDirs[1], availableDirs[0]])
+                        : [otherTeam[0], otherTeam[1]];
+                    
+                    seatMap[zouXiaoDir] = zouXiao;
+                    seatMap[lastDir] = lastPerson;
+                }
+            } else {
+                const lastDir = otherTeam[Math.random() > 0.5 ? 0 : 1];
+                seatMap[lastDir] = lastPerson;
+                const otherDir = otherTeam.find(dir => dir !== lastDir);
+                seatMap[otherDir] = zouXiao;
+            }
+
+            // 兜底检查：确保每个方位都有人
+            directions.forEach(dir => {
+                if (!seatMap[dir] || seatMap[dir] === "") {
+                    const unassigned = people.find(p => !Object.values(seatMap).includes(p));
+                    if (unassigned) seatMap[dir] = unassigned;
+                }
+            });
+
+            updatePage(seatMap);
+        }
+
+        /**
+         * 更新页面显示
+         */
+        function updatePage(seatMap) {
+            directions.forEach(dir => {
+                const person = seatMap[dir] || "-";
+                document.getElementById(`${dir}-person`).textContent = person;
+                const avatarEl = document.getElementById(`${dir}-avatar`);
+                avatarEl.src = avatarMap[person] || "";
+                avatarEl.alt = person;
+            });
+
+            const team1Text = `${seatMap.east || "-"} + ${seatMap.west || "-"}`;
+            const team2Text = `${seatMap.south || "-"} + ${seatMap.north || "-"}`;
+            document.getElementById("team1").textContent = team1Text;
+            document.getElementById("team2").textContent = team2Text;
+        }
+    </script>
 </body>
 </html>
