@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>创业西安 2026掼蛋分组器</title>
+    <title>创业西安 2026掼蛋分组器 🎊</title>
     <style>
         * {
             margin: 0;
@@ -19,6 +19,8 @@
             padding: 10px 0;
             width: 100%;
             overflow-x: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
         }
         .container {
             max-width: 900px;
@@ -37,11 +39,122 @@
         h1 {
             color: #c8102e;
             font-size: 24px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             width: 100%;
         }
-        /* 新增：裁判信息样式 */
+
+        /* 顶部操作区：输入框+单个按钮整合 */
+        .top-operation-area {
+            background-color: rgba(255, 248, 230, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #ffd700;
+        }
+        /* 概率输入框样式 */
+        .prob-input-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 0 0 15px 0;
+            align-items: center;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .prob-input-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 0;
+        }
+        .prob-input-item label {
+            color: #c8102e;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .prob-input-item input {
+            width: 80px;
+            padding: 8px 10px;
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            color: #333;
+            outline: none;
+        }
+        .prob-input-item input:focus {
+            border-color: #c8102e;
+            box-shadow: 0 0 5px rgba(200, 16, 46, 0.2);
+        }
+        .percent {
+            color: #c8102e;
+            font-weight: bold;
+        }
+        /* 单个分组按钮样式 */
+        .single-btn {
+            padding: 10px 40px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            transition: all 0.3s ease;
+            will-change: transform;
+        }
+        .single-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        /* 按钮禁用样式 */
+        .single-btn.disabled {
+            background: linear-gradient(90deg, #6c757d 0%, #adb5bd 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 倒计时样式 - 醒目居中 + 渐隐动画 */
+        .countdown {
+            font-size: 60px;
+            font-weight: bold;
+            color: #c8102e;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            display: none;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 分组成功提示动画 - 优化配色和时长 */
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(90deg, #ffc107 0%, #ff8c00 100%);
+            color: #fff;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+        .success-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 裁判信息样式 */
         .referee-info {
             font-size: 18px;
             color: #c8102e;
@@ -51,30 +164,6 @@
             background-color: rgba(255, 215, 0, 0.1);
             border-radius: 8px;
             width: 100%;
-        }
-        /* 历史记录区域样式 */
-        .history-section {
-            margin: 15px 0;
-            padding: 10px;
-            border: 2px dashed #ffd700;
-            border-radius: 10px;
-            background-color: rgba(255, 251, 235, 0.8);
-            width: 100%;
-        }
-        .history-section h3 {
-            color: #8b4513;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-        .history-content {
-            color: #5a3e2b;
-            font-size: 14px;
-            line-height: 1.6;
-            width: 100%;
-        }
-        .history-empty {
-            color: #999;
-            font-style: italic;
         }
         /* 掼蛋桌布局 - 响应式尺寸 */
         .seats-wrapper {
@@ -88,6 +177,7 @@
             border-radius: 50%;
             border: 8px solid #8b4513;
             box-shadow: inset 0 0 30px rgba(0,0,0,0.2), 0 0 20px rgba(139, 69, 19, 0.4);
+            will-change: transform;
         }
         .seat {
             position: absolute;
@@ -106,6 +196,7 @@
             border: 3px solid #c8102e;
             padding: 8px;
             transition: all 0.3s ease;
+            transform: translateZ(0);
         }
         /* 房主高亮样式 */
         .seat.host {
@@ -147,20 +238,21 @@
             margin-bottom: 6px;
             border: 4px solid #ffd700;
             box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            /* 头像切换动画更顺滑 */
+            transition: all 0.2s ease-in-out;
         }
         .seat .person {
             font-size: 14px;
             color: #333;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-        /* 中间标题 */
+        /* 中间标题 - 自适应字体大小 */
         .center-text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 6vw;
-            max-font-size: 38px;
+            font-size: clamp(18px, 6vw, 38px);
             font-weight: bold;
             color: #c8102e;
             letter-spacing: 4px;
@@ -170,6 +262,8 @@
             -webkit-text-fill-color: transparent;
             text-align: center;
             line-height: 1.2;
+            max-width: 80%;
+            z-index: 5;
         }
         /* 房主提示 */
         .host-tip {
@@ -211,77 +305,6 @@
             width: 100%;
             padding: 0 5px;
         }
-        /* 概率输入框 - 响应式布局 */
-        .prob-input-group {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-            align-items: center;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-        .prob-input-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin: 5px 0;
-        }
-        .prob-input-item label {
-            color: #c8102e;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .prob-input-item input {
-            width: 70px;
-            padding: 6px 10px;
-            border: 2px solid #ffd700;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: center;
-            color: #333;
-        }
-        .prob-input-item input:focus {
-            outline: none;
-            border-color: #c8102e;
-        }
-        .percent {
-            color: #c8102e;
-            font-weight: bold;
-        }
-        /* 按钮样式 */
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 12px 0;
-            width: 100%;
-            flex-wrap: wrap;
-        }
-        button {
-            padding: 12px 30px;
-            font-size: 16px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            margin: 5px 0;
-        }
-        .btn-random {
-            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-        }
-        .btn-prob {
-            background: linear-gradient(90deg, #c8102e 0%, #ff4500 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(200, 16, 46, 0.4);
-        }
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
         /* 规则说明 */
         .rule-note {
             margin-top: 20px;
@@ -295,22 +318,66 @@
             border-left: 5px solid #c8102e;
             width: 100%;
         }
+        /* 上一次分组历史记录区域（页面最底部） */
+        .history-section {
+            margin: 20px 0 10px;
+            padding: 10px;
+            border: 2px dashed #ffd700;
+            border-radius: 10px;
+            background-color: rgba(255, 251, 235, 0.8);
+            width: 100%;
+            will-change: contents;
+        }
+        .history-section h3 {
+            color: #8b4513;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .history-content {
+            color: #5a3e2b;
+            font-size: 14px;
+            line-height: 1.6;
+            width: 100%;
+        }
+        .history-empty {
+            color: #999;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎊 创业西安 2026掼蛋分组器 🎊</h1>
 
-        <!-- 上一次分组历史记录区域 -->
-        <div class="history-section">
-            <h3>📜 上一次分组记录</h3>
-            <div class="history-content" id="history-content">
-                <span class="history-empty">暂无历史分组记录</span>
+        <!-- 顶部操作区：输入框+单个分组按钮 -->
+        <div class="top-operation-area">
+            <!-- 概率输入框 -->
+            <div class="prob-input-group">
+                <div class="prob-input-item">
+                    <label for="prob-zou">小魏与邹校同队概率：</label>
+                    <input type="number" id="prob-zou" min="0" max="100" placeholder="33.4">
+                    <span class="percent">%</span>
+                </div>
+                <div class="prob-input-item">
+                    <label for="prob-next">小魏在邹校下家概率：</label>
+                    <input type="number" id="prob-next" min="0" max="100" placeholder="50">
+                    <span class="percent">%</span>
+                </div>
             </div>
+            <!-- 单个分组按钮 -->
+            <button class="single-btn" onclick="generateGroup()">🎲 分组</button>
+        </div>
+
+        <!-- 裁判信息 -->
+        <div class="referee-info">
+            🧑‍⚖️ 裁判：徐书记
         </div>
         
         <!-- 掼蛋桌布局 -->
         <div class="seats-wrapper">
+            <!-- 倒计时显示 -->
+            <div class="countdown" id="countdown">5</div>
+            
             <div class="seat north">
                 <div class="host-tag" style="display: none;">房主</div>
                 <div class="direction">北</div>
@@ -338,11 +405,6 @@
             <div class="center-text">创业西安<br>加油2026</div>
         </div>
 
-        <!-- 新增：裁判信息 -->
-        <div class="referee-info">
-            🧑‍⚖️ 裁判：徐书记
-        </div>
-
         <!-- 房主提示 -->
         <div class="host-tip" id="host-tip">本次房主：<span id="current-host">-</span></div>
 
@@ -358,26 +420,6 @@
             <div>🀝 南+北 队：<span id="team2">-</span></div>
         </div>
 
-        <!-- 两个概率输入框 -->
-        <div class="prob-input-group">
-            <div class="prob-input-item">
-                <label for="prob-zou">小魏与邹校同队概率：</label>
-                <input type="number" id="prob-zou" min="0" max="100" placeholder="33.4%">
-                <span class="percent">%</span>
-            </div>
-            <div class="prob-input-item">
-                <label for="prob-next">小魏在邹校下家概率：</label>
-                <input type="number" id="prob-next" min="0" max="100" placeholder="50%">
-                <span class="percent">%</span>
-            </div>
-        </div>
-
-        <!-- 分组按钮 -->
-        <div class="btn-group">
-            <button class="btn-random" onclick="generateRandomGroup()">🎲 随机分组</button>
-            <button class="btn-prob" onclick="generateProbGroup()">🎯 概率分组</button>
-        </div>
-
         <!-- 动态规则说明 -->
         <div class="rule-note" id="rule-note">
             <strong>🎯 本次分组规则（随机分组）：</strong><br>
@@ -385,7 +427,18 @@
             2. 小魏与邹校不同队时，小魏在邹校下家概率为50%（座位顺序：东→南→西→北→东）；<br>
             3. 随机选择1人作为房主，房主座位金色高亮。
         </div>
+
+        <!-- 上一次分组历史记录区域（页面最底部） -->
+        <div class="history-section">
+            <h3>📜 上一次分组记录</h3>
+            <div class="history-content" id="history-content">
+                <span class="history-empty">暂无历史分组记录</span>
+            </div>
+        </div>
     </div>
+
+    <!-- 分组成功提示 -->
+    <div class="success-toast" id="successToast">🎉 分组成功！祝各位玩得开心！</div>
 
     <script>
         // 头像映射
@@ -406,9 +459,9 @@
         const DEFAULT_PROB_NEXT = 50;
         // 存储上一次分组记录
         let lastGroupRecord = null;
-
-        // 初始化执行随机分组
-        generateRandomGroup();
+        // 动画相关变量
+        let avatarAnimationInterval = null;
+        let countdownInterval = null;
 
         /**
          * 格式化时间
@@ -418,28 +471,12 @@
         }
 
         /**
-         * 重置输入框为默认占位符
-         */
-        function resetInputFields() {
-            document.getElementById("prob-zou").value = "";
-            document.getElementById("prob-next").value = "";
-        }
-
-        /**
          * 保存分组记录
          */
         function saveGroupRecord(seatMap, hostName, generateTime) {
-            // 组装队伍信息
             const team1 = `${seatMap.east} + ${seatMap.west}`;
             const team2 = `${seatMap.south} + ${seatMap.north}`;
-            // 保存记录
-            lastGroupRecord = {
-                team1,
-                team2,
-                hostName,
-                time: generateTime
-            };
-            // 更新历史记录显示
+            lastGroupRecord = { team1, team2, hostName, time: generateTime };
             updateHistoryDisplay();
         }
 
@@ -469,14 +506,12 @@
                 if (seatMap[dir] === hostName) hostDir = dir;
             }
 
-            // 清除所有房主样式
             directions.forEach(dir => {
                 const seat = document.querySelector(`.seat.${dir}`);
                 seat.classList.remove("host");
                 seat.querySelector(".host-tag").style.display = "none";
             });
 
-            // 给房主座位加样式
             if (hostDir) {
                 const hostSeat = document.querySelector(`.seat.${hostDir}`);
                 hostSeat.classList.add("host");
@@ -489,21 +524,16 @@
         /**
          * 更新概率显示栏
          */
-        function updateProbTip(type, probZou, probNext) {
+        function updateProbTip(isRandom, probZou, probNext) {
             const tipEl = document.getElementById("current-prob-tip");
-
-            if (type === "random") {
+            if (isRandom) {
                 tipEl.textContent = `本次分组概率：小魏与马老板 ${DEFAULT_PROB_MA}% | 小魏与David ${DEFAULT_PROB_DAVID}% | 小魏与邹校 ${DEFAULT_PROB_ZOU}% | 小魏在邹校下家 ${DEFAULT_PROB_NEXT}%（不同队时）`;
-            } else if (type === "prob") {
-                const isValidZou = !isNaN(probZou) && probZou >= 0 && probZou <= 100;
-                const isValidNext = !isNaN(probNext) && probNext >= 0 && probNext <= 100;
-                const finalZou = isValidZou ? probZou : DEFAULT_PROB_ZOU;
-                const finalNext = isValidNext ? probNext : DEFAULT_PROB_NEXT;
-                
+            } else {
+                const finalZou = !isNaN(probZou) && probZou >=0 && probZou <=100 ? probZou : DEFAULT_PROB_ZOU;
+                const finalNext = !isNaN(probNext) && probNext >=0 && probNext <=100 ? probNext : DEFAULT_PROB_NEXT;
                 const remain = 100 - finalZou;
                 const probMa = Math.round(remain * 10) / 10;
                 const probDavid = remain - probMa;
-
                 tipEl.textContent = `本次分组概率：小魏与邹校同队 ${finalZou}% | 小魏与马老板 ${probMa}% | 小魏与David ${probDavid}% | 小魏在邹校下家 ${finalNext}%（不同队时）`;
             }
         }
@@ -511,40 +541,27 @@
         /**
          * 更新规则说明区域
          */
-        function updateRuleNote(type, probZou, probNext) {
+        function updateRuleNote(isRandom, probZou, probNext) {
             const ruleEl = document.getElementById("rule-note");
-
-            if (type === "random") {
+            if (isRandom) {
                 ruleEl.innerHTML = `
                     <strong>🎯 本次分组规则（随机分组）：</strong><br>
                     1. 所有分配完全随机，小魏与马老板/David/邹校同队概率 ${DEFAULT_PROB_MA}%/${DEFAULT_PROB_DAVID}%/${DEFAULT_PROB_ZOU}%；<br>
                     2. 小魏与邹校不同队时，小魏在邹校下家概率为${DEFAULT_PROB_NEXT}%（座位顺序：东→南→西→北→东）；<br>
                     3. 随机选择1人作为房主，房主座位金色高亮。
                 `;
-            } else if (type === "prob") {
-                const isValidZou = !isNaN(probZou) && probZou >= 0 && probZou <= 100;
-                const isValidNext = !isNaN(probNext) && probNext >= 0 && probNext <= 100;
-                const finalZou = isValidZou ? probZou : DEFAULT_PROB_ZOU;
-                const finalNext = isValidNext ? probNext : DEFAULT_PROB_NEXT;
+            } else {
+                const finalZou = !isNaN(probZou) && probZou >=0 && probZou <=100 ? probZou : DEFAULT_PROB_ZOU;
+                const finalNext = !isNaN(probNext) && probNext >=0 && probNext <=100 ? probNext : DEFAULT_PROB_NEXT;
                 const remain = 100 - finalZou;
                 const probMa = Math.round(remain * 10) / 10;
                 const probDavid = remain - probMa;
-
-                if (!isValidZou && !isValidNext) {
-                    ruleEl.innerHTML = `
-                        <strong>🎯 本次分组规则（概率分组-默认随机）：</strong><br>
-                        1. 输入概率无效，按随机模式执行，小魏与马老板/David/邹校同队概率 ${DEFAULT_PROB_MA}%/${DEFAULT_PROB_DAVID}%/${DEFAULT_PROB_ZOU}%；<br>
-                        2. 小魏与邹校不同队时，小魏在邹校下家概率为${DEFAULT_PROB_NEXT}%（座位顺序：东→南→西→北→东）；<br>
-                        3. 随机选择1人作为房主，房主座位金色高亮。
-                    `;
-                } else {
-                    ruleEl.innerHTML = `
-                        <strong>🎯 本次分组规则（概率分组-自定义）：</strong><br>
-                        1. 小魏与邹校同队概率 ${finalZou}%，与马老板 ${probMa}%，与David ${probDavid}%；<br>
-                        2. 小魏与邹校不同队时，小魏在邹校下家概率为${finalNext}%（座位顺序：东→南→西→北→东）；<br>
-                        3. 随机选择1人作为房主，房主座位金色高亮。
-                    `;
-                }
+                ruleEl.innerHTML = `
+                    <strong>🎯 本次分组规则（概率分组）：</strong><br>
+                    1. 小魏与邹校同队概率 ${finalZou}%，与马老板 ${probMa}%，与David ${probDavid}%；<br>
+                    2. 小魏与邹校不同队时，小魏在邹校下家概率为${finalNext}%（座位顺序：东→南→西→北→东）；<br>
+                    3. 随机选择1人作为房主，房主座位金色高亮。
+                `;
             }
         }
 
@@ -561,62 +578,96 @@
         }
 
         /**
+         * 随机切换头像动画 - 优化切换速度
+         */
+        function startAvatarAnimation() {
+            // 400ms切换一次，视觉更舒适
+            avatarAnimationInterval = setInterval(() => {
+                const randomPeople = [...people].sort(() => Math.random() - 0.5);
+                directions.forEach((dir, i) => {
+                    document.getElementById(`${dir}-person`).textContent = randomPeople[i];
+                    document.getElementById(`${dir}-avatar`).src = avatarMap[randomPeople[i]] || "";
+                });
+            }, 400);
+        }
+
+        /**
+         * 停止头像动画
+         */
+        function stopAvatarAnimation() {
+            if (avatarAnimationInterval) {
+                clearInterval(avatarAnimationInterval);
+                avatarAnimationInterval = null;
+            }
+        }
+
+        /**
+         * 显示分组成功提示 - 延长显示时长至3秒
+         */
+        function showSuccessToast() {
+            const toast = document.getElementById("successToast");
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        /**
+         * 开始倒计时 - 增加渐隐效果
+         */
+        function startCountdown(seconds, callback) {
+            const countdownEl = document.getElementById("countdown");
+            countdownEl.style.display = "block";
+            countdownEl.style.opacity = "1";
+            countdownEl.textContent = seconds;
+            
+            let currentSecond = seconds;
+            countdownInterval = setInterval(() => {
+                currentSecond--;
+                if (currentSecond <= 0) {
+                    countdownEl.style.opacity = "0";
+                    setTimeout(() => {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                        countdownEl.style.display = "none";
+                        countdownEl.style.opacity = "1";
+                        callback();
+                    }, 300);
+                } else {
+                    countdownEl.textContent = currentSecond;
+                }
+            }, 1000);
+        }
+
+        /**
          * 随机分组逻辑
          */
-        function generateRandomGroup() {
-            resetInputFields();
-            const now = new Date();
-            const currentTime = formatTime(now);
-            document.getElementById("generate-time").textContent = currentTime;
-
-            // 打乱人员顺序
-            const randomPeople = [...people].sort(() => Math.random() - 0.5);
+        function randomGroup() {
             const seatMap = {};
+            const randomPeople = [...people].sort(() => Math.random() - 0.5);
             directions.forEach((dir, i) => seatMap[dir] = randomPeople[i]);
-
-            // 更新页面和房主
-            updatePage(seatMap);
-            const hostName = setRandomHost(seatMap);
-            // 保存历史记录
-            saveGroupRecord(seatMap, hostName, currentTime);
-
-            updateProbTip("random");
-            updateRuleNote("random");
+            return seatMap;
         }
 
         /**
          * 概率分组逻辑
          */
-        function generateProbGroup() {
-            const now = new Date();
-            const currentTime = formatTime(now);
-            document.getElementById("generate-time").textContent = currentTime;
-
-            const probZouInput = parseFloat(document.getElementById("prob-zou").value);
-            const probNextInput = parseFloat(document.getElementById("prob-next").value);
-
-            const isValidZou = !isNaN(probZouInput) && probZouInput >= 0 && probZouInput <= 100;
-            const finalZou = isValidZou ? probZouInput : DEFAULT_PROB_ZOU;
-            const isValidNext = !isNaN(probNextInput) && probNextInput >= 0 && probNextInput <= 100;
-            const finalNext = isValidNext ? probNextInput : DEFAULT_PROB_NEXT;
+        function probGroup(probZou, probNext) {
+            const finalZou = !isNaN(probZou) && probZou >=0 && probZou <=100 ? probZou : DEFAULT_PROB_ZOU;
+            const finalNext = !isNaN(probNext) && probNext >=0 && probNext <=100 ? probNext : DEFAULT_PROB_NEXT;
 
             const seatMap = { east: "", south: "", west: "", north: "" };
             let xiaoWeiTeammate = "";
             const randomVal = Math.random();
 
-            if (isValidZou) {
-                const probZouDecimal = finalZou / 100;
-                const remainDecimal = (100 - finalZou) / 100 / 2;
-                if (randomVal < remainDecimal) {
-                    xiaoWeiTeammate = "马老板";
-                } else if (randomVal < remainDecimal * 2) {
-                    xiaoWeiTeammate = "David";
-                } else {
-                    xiaoWeiTeammate = "邹校";
-                }
+            const probZouDecimal = finalZou / 100;
+            const remainDecimal = (100 - finalZou) / 100 / 2;
+            if (randomVal < remainDecimal) {
+                xiaoWeiTeammate = "马老板";
+            } else if (randomVal < remainDecimal * 2) {
+                xiaoWeiTeammate = "David";
             } else {
-                const teammates = ["马老板", "David", "邹校"];
-                xiaoWeiTeammate = teammates[Math.floor(Math.random() * 3)];
+                xiaoWeiTeammate = "邹校";
             }
 
             const team1 = ["east", "west"];
@@ -669,12 +720,54 @@
                 }
             });
 
-            updatePage(seatMap);
-            const hostName = setRandomHost(seatMap);
-            saveGroupRecord(seatMap, hostName, currentTime);
+            return seatMap;
+        }
 
-            updateProbTip("prob", probZouInput, probNextInput);
-            updateRuleNote("prob", probZouInput, probNextInput);
+        /**
+         * 统一分组入口：点击后才执行
+         */
+        function generateGroup() {
+            // 禁用按钮防止重复点击
+            const btn = document.querySelector(".single-btn");
+            btn.disabled = true;
+            btn.classList.add("disabled");
+            
+            // 获取输入的概率值
+            const probZouInput = parseFloat(document.getElementById("prob-zou").value);
+            const probNextInput = parseFloat(document.getElementById("prob-next").value);
+            
+            // 判断是否为概率模式
+            const isProbMode = (!isNaN(probZouInput) && probZouInput >=0 && probZouInput <=100) || (!isNaN(probNextInput) && probNextInput >=0 && probNextInput <=100);
+            
+            // 提前计算最终结果
+            const finalSeatMap = isProbMode ? probGroup(probZouInput, probNextInput) : randomGroup();
+            const currentTime = formatTime(new Date());
+            
+            // 启动头像切换动画
+            startAvatarAnimation();
+            
+            // 启动5秒倒计时，结束后显示最终结果
+            startCountdown(5, () => {
+                // 停止头像动画
+                stopAvatarAnimation();
+                
+                // 更新最终结果
+                updatePage(finalSeatMap);
+                const hostName = setRandomHost(finalSeatMap);
+                saveGroupRecord(finalSeatMap, hostName, currentTime);
+                document.getElementById("generate-time").textContent = currentTime;
+                
+                // 更新概率提示和规则说明
+                updateProbTip(!isProbMode, probZouInput, probNextInput);
+                updateRuleNote(!isProbMode, probZouInput, probNextInput);
+                
+                // 显示成功提示
+                showSuccessToast();
+                
+                // 启用按钮
+                btn.disabled = false;
+                btn.classList.remove("disabled");
+            });
         }
     </script>
 </body>
