@@ -59,6 +59,25 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             border: 3px solid #c8102e;
             padding: 10px;
+            transition: all 0.3s ease;
+        }
+        /* 房主座位高亮样式 */
+        .seat.host {
+            border-color: #ffd700;
+            background: linear-gradient(180deg, #fff8dc 0%, #fff3cd 100%);
+            box-shadow: 0 0 20px #ffd700;
+        }
+        .host-tag {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #ffd700;
+            color: #c8102e;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         /* 方位定位 */
         .seat.north { top: 20px; left: 50%; transform: translateX(-50%); }
@@ -102,6 +121,14 @@
             -webkit-text-fill-color: transparent;
             text-align: center;
             line-height: 1.4;
+        }
+        /* 房主提示 */
+        .host-tip {
+            font-size: 20px;
+            color: #ff8c00;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         /* 生成时间 */
         .generate-time {
@@ -168,27 +195,34 @@
         <!-- 掼蛋桌布局 -->
         <div class="seats-wrapper">
             <div class="seat north">
+                <div class="host-tag" style="display: none;">房主</div>
                 <div class="direction">北</div>
                 <img class="avatar" id="north-avatar" src="" alt="头像">
                 <div class="person" id="north-person">-</div>
             </div>
             <div class="seat south">
+                <div class="host-tag" style="display: none;">房主</div>
                 <div class="direction">南</div>
                 <img class="avatar" id="south-avatar" src="" alt="头像">
                 <div class="person" id="south-person">-</div>
             </div>
             <div class="seat west">
+                <div class="host-tag" style="display: none;">房主</div>
                 <div class="direction">西</div>
                 <img class="avatar" id="west-avatar" src="" alt="头像">
                 <div class="person" id="west-person">-</div>
             </div>
             <div class="seat east">
+                <div class="host-tag" style="display: none;">房主</div>
                 <div class="direction">东</div>
                 <img class="avatar" id="east-avatar" src="" alt="头像">
                 <div class="person" id="east-person">-</div>
             </div>
             <div class="center-text">创业西安<br>加油2026</div>
         </div>
+
+        <!-- 房主提示 -->
+        <div class="host-tip" id="host-tip">本次房主：<span id="current-host">-</span></div>
 
         <!-- 生成时间 -->
         <div class="generate-time">📅 本次分组生成时间：<span id="generate-time">-</span></div>
@@ -210,7 +244,8 @@
             <strong>🎯 分组规则：</strong><br>
             1. 小魏和马老板同队概率 xx%；<br>
             2. 小魏和David同队概率 xx%；<br>
-            3. 若小魏不和邹校同队，小魏在邹校下家的概率 xx%（下家顺序：东→南→西→北→东）。
+            3. 若小魏不和邹校同队，小魏在邹校下家的概率 xx%（下家顺序：东→南→西→北→东）。<br>
+            4. 每次分组随机选出1人作为房主，房主座位高亮显示。
         </div>
     </div>
 
@@ -228,7 +263,7 @@
         const directions = ["east", "south", "west", "north"];
         const directionOrder = ["east", "south", "west", "north"];
 
-        // 初始化：默认执行概率分组
+        // 初始化：默认执行概率分组 + 随机房主
         generateProbGroup();
 
         /**
@@ -245,15 +280,50 @@
         }
 
         /**
+         * 随机选择房主并高亮显示
+         */
+        function setRandomHost(seatMap) {
+            // 1. 随机选1个人作为房主
+            const hostName = people[Math.floor(Math.random() * people.length)];
+            
+            // 2. 找到房主所在的方位
+            let hostDir = "";
+            for (const dir of directions) {
+                if (seatMap[dir] === hostName) {
+                    hostDir = dir;
+                    break;
+                }
+            }
+
+            // 3. 清除所有座位的房主样式
+            directions.forEach(dir => {
+                const seatEl = document.querySelector(`.seat.${dir}`);
+                const tagEl = seatEl.querySelector(".host-tag");
+                seatEl.classList.remove("host");
+                tagEl.style.display = "none";
+            });
+
+            // 4. 给房主座位添加高亮样式
+            if (hostDir) {
+                const hostSeatEl = document.querySelector(`.seat.${hostDir}`);
+                const hostTagEl = hostSeatEl.querySelector(".host-tag");
+                hostSeatEl.classList.add("host");
+                hostTagEl.style.display = "block";
+            }
+
+            // 5. 更新房主提示文字
+            document.getElementById("current-host").textContent = hostName;
+        }
+
+        /**
          * 方法1：随机分组（完全随机，无概率限制）
          */
         function generateRandomGroup() {
             const now = new Date();
             document.getElementById("generate-time").textContent = formatTime(now);
 
-            // 深拷贝人员列表，避免修改原数组
+            // 深拷贝人员列表并打乱
             let randomPeople = [...people];
-            // 打乱数组顺序（完全随机）
             randomPeople = randomPeople.sort(() => Math.random() - 0.5);
 
             // 分配到四个方位
@@ -261,6 +331,9 @@
             directions.forEach((dir, index) => {
                 seatMap[dir] = randomPeople[index];
             });
+
+            // 设置随机房主
+            setRandomHost(seatMap);
 
             // 更新页面
             updatePage(seatMap);
@@ -344,6 +417,10 @@
                 }
             });
 
+            // 设置随机房主
+            setRandomHost(seatMap);
+
+            // 更新页面
             updatePage(seatMap);
         }
 
