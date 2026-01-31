@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧨 阖家欢乐开心掼蛋 🧧</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", "华文琥珀", sans-serif;
+        }
+        body {
+            background: 
+                url("https://picsum.photos/id/152/1920/1080") fixed center/cover,
+                linear-gradient(135deg, #ffeeee 0%, #c8102e 100%);
+            background-blend-mode: overlay;
+            min-height: 100vh;
+            padding: 20px 0;
+            overflow-x: hidden;
+        }
+        /* 新春装饰元素 */
+        .firework {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: url("https://picsum.photos/id/175/500/500") no-repeat;
+            background-size: 300px;
+            opacity: 0.1;
+            z-index: -1;
+            animation: float 20s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: translate(-20%, -20%) rotate(0deg); }
+            100% { transform: translate(120%, 120%) rotate(360deg); }
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(255, 0, 0, 0.6);
+            border: 8px solid #ffd700;
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("https://picsum.photos/id/146/200/200") repeat;
+            opacity: 0.05;
+            z-index: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #c8102e;
+            font-size: 42px; /* 调小字体大小 */
+            margin-bottom: 30px;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.3);
+            letter-spacing: 8px; /* 调整字符间距更协调 */
+            background: linear-gradient(90deg, #ffd700 0%, #ff6600 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+        h1::after {
+            content: "🧨 新春大吉 🧧";
+            display: block;
+            font-size: 28px;
+            margin-top: 10px;
+            -webkit-text-fill-color: #c8102e;
+        }
+        /* 音乐控制 */
+        .music-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #ffd700;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+        .music-icon {
+            color: #c8102e;
+            font-size: 24px;
+        }
+        /* 选择区域 */
+        .select-area {
+            background: linear-gradient(135deg, #fff0f0 0%, #ffcccc 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 4px solid #ffd700;
+            box-shadow: inset 0 0 20px rgba(255, 153, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        .select-area h3 {
+            color: #c8102e;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 26px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        .select-tips {
+            text-align: center;
+            color: #ff6600;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .person-select {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .person-item {
+            padding: 12px 25px;
+            background: linear-gradient(90deg, #fff 0%, #fff8f8 100%);
+            border: 4px solid #ffd700;
+            border-radius: 50px;
+            color: #c8102e;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .person-item::before {
+            content: "👤";
+            font-size: 22px;
+        }
+        .person-item.active {
+            background: linear-gradient(90deg, #c8102e 0%, #ff3333 100%);
+            color: #fff;
+            border-color: #ffd700;
+            transform: scale(1.1);
+            box-shadow: 0 6px 18px rgba(255, 0, 0, 0.4);
+        }
+        .person-item.active::before {
+            content: "❌";
+        }
+        /* 分组按钮 */
+        .group-btn {
+            display: block;
+            width: 250px;
+            height: 80px;
+            line-height: 80px;
+            margin: 0 auto 40px;
+            background: linear-gradient(90deg, #ff3333 0%, #c8102e 100%);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.6);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .group-btn::before {
+            content: "🎲";
+            margin-right: 10px;
+        }
+        .group-btn:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(255, 0, 0, 0.7);
+        }
+        .group-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        /* 圆桌区域 - 调整比例为正方形更协调 */
+        .round-table {
+            position: relative;
+            width: 80vw;      /* 从90vw改为80vw，缩小整体尺寸 */
+            max-width: 500px; /* 从600px改为500px */
+            height: 80vw;     /* 保持宽高一致，确保是正圆 */
+            max-height: 500px;/* 从600px改为500px */
+            margin: 0 auto 40px;
+            background: radial-gradient(circle, #fff8f8 0%, #ffeeee 100%);
+            border-radius: 50%;
+            border: 10px solid #c8102e;
+            box-shadow: 
+                inset 0 0 50px rgba(255, 153, 0, 0.4),
+                0 0 40px rgba(255, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+            background-image: url("https://picsum.photos/id/146/300/300");
+            background-blend-mode: soft-light;
+        }
+        /* 圆桌装饰 */
+        .table-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: url("https://picsum.photos/id/175/200/200") no-repeat center;
+            background-size: 150px;
+            opacity: 0.1;
+        }
+        /* 中间区域 - 优化显示逻辑 */
+        .table-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 50%;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 5px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 153, 0, 0.5);
+        }
+        .center-text {
+            color: #c8102e;
+            font-size: 24px; 
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            /* 默认显示，倒计时时隐藏 */
+            transition: opacity 0.3s ease;
+        }
+        .countdown {
+            font-size: 80px;
+            font-weight: bold;
+            color: #c8102e;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.2);
+            display: none;
+            background: linear-gradient(90deg, #ffd700 0%, #ff6600 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* 座位样式 */
+        .seat {
+            position: absolute;
+            width: 24vw;
+            max-width: 140px;
+            height: 28vw;
+            max-height: 160px;
+            background: linear-gradient(135deg, #fff 0%, #fff8f8 100%);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 5px solid #ffd700;
+            padding: 10px;
+            z-index: 3;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 18px rgba(255, 0, 0, 0.3);
+        }
+        .seat.host {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, #fff8dc 0%, #ffffe0 100%);
+            box-shadow: 0 0 30px #ffd700, 0 6px 18px rgba(255, 0, 0, 0.4);
+            transform: scale(1.1);
+        }
+        .host-tag {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(90deg, #ffd700 0%, #ffaa00 100%);
+            color: #c8102e;
+            font-size: 16px;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+            display: none;
+            border: 2px solid #c8102e;
+        }
+        /* 座位位置 - 适配新的圆桌尺寸 */
+        .seat.north { top: 5%; left: 50%; transform: translateX(-50%); }
+        .seat.south { bottom: 5%; left: 50%; transform: translateX(-50%); }
+        .seat.west { left: 5%; top: 50%; transform: translateY(-50%); }
+        .seat.east { right: 5%; top: 50%; transform: translateY(-50%); }
+        /* 头像和名字 - 修复头像显示问题 */
+        .seat .direction {
+            color: #c8102e;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        .seat .avatar {
+            width: 14vw;
+            max-width: 90px;
+            height: 14vw;
+            max-height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 5px solid #ffd700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            background: #fff;
+            padding: 3px;
+            /* 默认显示占位图 */
+            background-image: url('https://picsum.photos/90/90');
+            background-size: cover;
+        }
+        .seat .name {
+            font-size: 18px;
+            color: #c8102e;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 12px;
+            border-radius: 15px;
+        }
+        /* 闪烁动画 */
+        @keyframes blink {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .blink {
+            animation: blink 0.4s infinite;
+        }
+        /* 结果区域 */
+        .result-area {
+            background: linear-gradient(135deg, #fff0f0 0%, #ffcccc 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 40px;
+            border: 4px solid #ffd700;
+            box-shadow: inset 0 0 20px rgba(255, 153, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+        .result-area h3 {
+            color: #c8102e;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        .result-content {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 25px;
+            font-size: 20px;
+            color: #c8102e;
+            line-height: 2;
+        }
+        .result-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+            min-width: 200px;
+        }
+        .time-info {
+            text-align: center;
+            color: #c8102e;
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+        }
+        /* 占位样式 */
+        .placeholder {
+            color: #999;
+            font-style: italic;
+        }
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px; /* 移动端字体进一步调小 */
+                letter-spacing: 6px;
+            }
+            .person-item {
+                font-size: 18px;
+                padding: 10px 20px;
+            }
+            .group-btn {
+                width: 220px;
+                height: 70px;
+                line-height: 70px;
+                font-size: 24px;
+            }
+            .center-text {
+                font-size: 20px; /* 移动端中间文字调小 */
+            }
+            .countdown {
+                font-size: 60px;
+            }
+            .result-item {
+                font-size: 18px;
+                min-width: 160px;
+            }
+            /* 移动端圆桌进一步优化 */
+            .round-table {
+                width: 90vw;
+                max-width: 400px;
+                height: 90vw;
+                max-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="firework"></div>
+    <div class="firework" style="animation-delay: 5s;"></div>
+    <div class="firework" style="animation-delay: 10s;"></div>
+
+    <div class="container">
+        <!-- 音乐控制 -->
+        <div class="music-control" id="musicBtn">
+            <div class="music-icon" id="musicIcon">▶️</div>
+        </div>
+        <audio id="bgMusic" loop>
+            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        </audio>
+
+        <h1>阖家欢乐开心掼蛋</h1> <!-- 去掉中间的点，字体协调 -->
+        
+        <!-- 选择不参与人员 -->
+        <div class="select-area">
+            <h3>🎯 选择本次不参与的人员</h3>
+            <div class="select-tips">请选择2位不参与的人员（当前已选：<span id="selected-count">0</span>/2）</div>
+            <div class="person-select">
+                <div class="person-item" data-name="潼潼">潼潼</div>
+                <div class="person-item" data-name="微微">微微</div>
+                <div class="person-item" data-name="爸爸">爸爸</div>
+                <div class="person-item" data-name="妈妈">妈妈</div>
+                <div class="person-item" data-name="奶奶">奶奶</div>
+                <div class="person-item" data-name="二爸">二爸</div>
+            </div>
+        </div>
+
+        <!-- 分组按钮 -->
+        <button class="group-btn" id="groupBtn" disabled>开始分组</button>
+
+        <!-- 圆桌座位区域 -->
+        <div class="round-table">
+            <div class="table-decoration"></div>
+            <div class="table-center">
+                <div class="center-text" id="centerText">阖家欢乐开心掼蛋</div>
+                <div class="countdown" id="countdown">5</div>
+            </div>
+            
+            <!-- 北座位 -->
+            <div class="seat north">
+                <div class="host-tag">房主</div>
+                <div class="direction">北</div>
+                <img class="avatar" id="north-avatar" src="" alt="头像">
+                <div class="name" id="north-name">-</div>
+            </div>
+            <!-- 南座位 -->
+            <div class="seat south">
+                <div class="host-tag">房主</div>
+                <div class="direction">南</div>
+                <img class="avatar" id="south-avatar" src="" alt="头像">
+                <div class="name" id="south-name">-</div>
+            </div>
+            <!-- 西座位 -->
+            <div class="seat west">
+                <div class="host-tag">房主</div>
+                <div class="direction">西</div>
+                <img class="avatar" id="west-avatar" src="" alt="头像">
+                <div class="name" id="west-name">-</div>
+            </div>
+            <!-- 东座位 -->
+            <div class="seat east">
+                <div class="host-tag">房主</div>
+                <div class="direction">东</div>
+                <img class="avatar" id="east-avatar" src="" alt="头像">
+                <div class="name" id="east-name">-</div>
+            </div>
+        </div>
+
+        <!-- 分组结果区域 -->
+        <div class="result-area">
+            <h3>🏆 分组结果</h3>
+            <div class="result-content">
+                <div class="result-item">
+                    🀜 东 + 西 = <span id="team1" class="placeholder">待分组</span>
+                </div>
+                <div class="result-item">
+                    🀝 南 + 北 = <span id="team2" class="placeholder">待分组</span>
+                </div>
+                <div class="result-item">
+                    👑 房主 = <span id="host-name" class="placeholder">待分组</span>
+                </div>
+            </div>
+            <div class="time-info">
+                🕒 分组时间：<span id="group-time" class="placeholder">--</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 音乐控制 ==========
+        const musicBtn = document.getElementById('musicBtn');
+        const musicIcon = document.getElementById('musicIcon');
+        const bgMusic = document.getElementById('bgMusic');
+        let isMusicPlaying = false;
+        musicBtn.addEventListener('click', () => {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                musicIcon.textContent = '▶️';
+            } else {
+                bgMusic.play();
+                musicIcon.textContent = '⏸️';
+            }
+            isMusicPlaying = !isMusicPlaying;
+        });
+
+        // ========== 核心配置（专属头像） ==========
+        // 替换为公开可访问的头像链接，解决base64可能的显示问题
+        const PERSON_CONFIG = {
+            "爸爸": "https://picsum.photos/id/1005/90/90",
+            "潼潼": "https://picsum.photos/id/1012/90/90",
+            "微微": "https://picsum.photos/id/1027/90/90",
+            "妈妈": "https://picsum.photos/id/1011/90/90",
+            "奶奶": "https://picsum.photos/id/1003/90/90",
+            "二爸": "https://picsum.photos/id/1010/90/90"
+        };
+        // 注：如需替换真实头像，将上述URL替换为对应人员头像的URL或base64编码
+
+        // 座位方向映射
+        const SEAT_DIRECTIONS = ["north", "south", "west", "east"];
+        // 全局状态
+        let appState = {
+            selectedExclude: [], // 选中不参与的人员（最多2个）
+            isGrouping: false    // 是否正在分组中
+        };
+
+        // ========== 页面初始化 ==========
+        window.addEventListener('DOMContentLoaded', () => {
+            // 绑定人员选择事件
+            document.querySelectorAll('.person-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const name = item.dataset.name;
+                    // 切换选中状态
+                    if (appState.selectedExclude.includes(name)) {
+                        // 取消选中
+                        appState.selectedExclude = appState.selectedExclude.filter(n => n !== name);
+                        item.classList.remove('active');
+                    } else {
+                        // 最多选2个
+                        if (appState.selectedExclude.length >= 2) return;
+                        // 选中
+                        appState.selectedExclude.push(name);
+                        item.classList.add('active');
+                    }
+                    // 更新选中计数
+                    document.getElementById('selected-count').textContent = appState.selectedExclude.length;
+                    // 启用/禁用分组按钮
+                    document.getElementById('groupBtn').disabled = appState.selectedExclude.length !== 2;
+                });
+            });
+
+            // 绑定分组按钮点击事件
+            document.getElementById('groupBtn').addEventListener('click', startGrouping);
+        });
+
+        // ========== 核心分组逻辑 ==========
+        function startGrouping() {
+            if (appState.isGrouping) return;
+            
+            appState.isGrouping = true;
+            const groupBtn = document.getElementById('groupBtn');
+            groupBtn.disabled = true;
+
+            // 1. 获取参与人员（排除选中的2人）
+            const allPersons = Object.keys(PERSON_CONFIG);
+            const participants = allPersons.filter(p => !appState.selectedExclude.includes(p));
+            
+            // 2. 验证参与人数（必须4人）
+            if (participants.length !== 4) {
+                alert("参与人数异常，请重新选择！");
+                appState.isGrouping = false;
+                groupBtn.disabled = false;
+                return;
+            }
+
+            // 3. 生成符合规则的分组（潼潼和微微不同队）
+            const finalGroups = generateValidGroups(participants);
+            
+            // 4. 启动倒计时和闪烁动画
+            startCountdownAnimation(finalGroups);
+        }
+
+        function generateValidGroups(participants) {
+            let seatMap = {};
+            let isValid = false;
+
+            // 循环直到生成符合规则的分组
+            while (!isValid) {
+                const shuffled = [...participants].sort(() => Math.random() - 0.5);
+                seatMap = {
+                    north: shuffled[0],
+                    south: shuffled[1],
+                    west: shuffled[2],
+                    east: shuffled[3]
+                };
+
+                // 验证：潼潼和微微不同队
+                const team1 = [seatMap.east, seatMap.west];
+                const team2 = [seatMap.south, seatMap.north];
+                const hasTongTongWeiWei = (team1.includes('潼潼') && team1.includes('微微')) || 
+                                         (team2.includes('潼潼') && team2.includes('微微'));
+                isValid = !hasTongTongWeiWei;
+            }
+
+            // 随机选房主
+            const hostName = participants[Math.floor(Math.random() * participants.length)];
+
+            return {
+                seatMap: seatMap,
+                hostName: hostName,
+                team1: `${seatMap.east} + ${seatMap.west}`,
+                team2: `${seatMap.south} + ${seatMap.north}`,
+                groupTime: formatCurrentTime()
+            };
+        }
+
+        function startCountdownAnimation(finalGroups) {
+            const countdownEl = document.getElementById('countdown');
+            const centerTextEl = document.getElementById('centerText');
+            const seats = document.querySelectorAll('.seat');
+            
+            // 显示倒计时，隐藏中间文字
+            countdownEl.style.display = 'block';
+            centerTextEl.style.opacity = '0'; // 渐变隐藏
+            seats.forEach(seat => seat.classList.add('blink'));
+
+            let count = 5;
+            countdownEl.textContent = count;
+
+            const countdownTimer = setInterval(() => {
+                count--;
+                countdownEl.textContent = count;
+                if (count <= 0) {
+                    clearInterval(countdownTimer);
+                    // 隐藏倒计时，显示中间文字
+                    countdownEl.style.display = 'none';
+                    centerTextEl.style.opacity = '1'; // 渐变显示
+                    seats.forEach(seat => seat.classList.remove('blink'));
+                    showGroupResult(finalGroups);
+                    appState.isGrouping = false;
+                }
+            }, 1000);
+        }
+
+        function showGroupResult(result) {
+            // 更新座位头像和名字
+            SEAT_DIRECTIONS.forEach(dir => {
+                const personName = result.seatMap[dir];
+                document.getElementById(`${dir}-name`).textContent = personName;
+                const avatarEl = document.getElementById(`${dir}-avatar`);
+                // 设置头像URL
+                avatarEl.src = PERSON_CONFIG[personName];
+                // 头像加载失败时的备用方案
+                avatarEl.onerror = function() {
+                    this.src = 'https://picsum.photos/90/90';
+                };
+                // 确保头像显示
+                avatarEl.style.display = 'block';
+            });
+
+            // 设置房主
+            SEAT_DIRECTIONS.forEach(dir => {
+                const seatEl = document.querySelector(`.seat.${dir}`);
+                const hostTag = seatEl.querySelector('.host-tag');
+                if (result.seatMap[dir] === result.hostName) {
+                    seatEl.classList.add('host');
+                    hostTag.style.display = 'block';
+                } else {
+                    seatEl.classList.remove('host');
+                    hostTag.style.display = 'none';
+                }
+            });
+
+            // 更新结果显示
+            document.getElementById('team1').textContent = result.team1;
+            document.getElementById('team2').textContent = result.team2;
+            document.getElementById('host-name').textContent = result.hostName;
+            document.getElementById('group-time').textContent = result.groupTime;
+        }
+
+        // ========== 工具函数 ==========
+        function formatCurrentTime() {
+            const now = new Date();
+            return `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>
